@@ -54,3 +54,66 @@ class TestCustomUserManager(TestCase):
             )
 
         self.assertEqual(str(context.exception), "Invalid email format")
+
+class TestCustomUser(TestCase):
+    def setUp(self):
+        """Set up test data."""
+        self.email = fake.email()
+        self.is_active = fake.boolean()
+        self.is_admin = fake.boolean()
+        self.role = Roles.CONTRIBUTOR
+
+    def test_str_method(self):
+        """Test the __str__ method of the CustomUser model."""
+        user = CustomUser.objects.create_user(
+            email=self.email,
+            is_active=self.is_active,
+            is_admin=self.is_admin,
+            role=self.role,
+        )
+        
+        self.assertEqual(CustomUser.__str__(user), self.email)
+
+    def test_has_perm(self):
+        """Test the has_perm method of the CustomUser model."""
+        user = CustomUser.objects.create_user(
+            email=self.email,
+            is_active=self.is_active,
+            is_admin=self.is_admin,
+            role=self.role,
+        )
+
+        self.assertTrue(CustomUser.has_perm(user))
+
+    def test_has_module_perms(self):
+        """Test the has_module_perms method of the CustomUser model."""
+        user = CustomUser.objects.create_user(
+            email=self.email,
+            is_active=self.is_active,
+            is_admin=self.is_admin,
+            role=self.role,
+        )
+
+        self.assertTrue(CustomUser.has_module_perms(user))
+
+    def test_is_staff(self):
+        """Test the is_staff property of the CustomUser model."""
+        user = CustomUser.objects.create_user(
+            email=self.email,
+            is_active=self.is_active,
+            is_admin=self.is_admin,
+            role=self.role,
+        )
+
+        self.assertEqual(CustomUser.is_staff(user), self.is_admin)
+
+    def test_is_project_lead(self):
+        """Test the is_project_lead method of the CustomUser model."""
+        user = CustomUser.objects.create_user(
+            email=self.email,
+            is_active=self.is_active,
+            is_admin=self.is_admin,
+            role=self.role,
+        )
+
+        self.assertEqual(CustomUser.is_project_lead(user), self.role == Roles.PROJECT_LEAD)
