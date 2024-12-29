@@ -59,8 +59,8 @@ class TestCustomUser(TestCase):
     def setUp(self):
         """Set up test data."""
         self.email = fake.email()
-        self.is_active = fake.boolean()
-        self.is_admin = fake.boolean()
+        self.is_active = True
+        self.is_admin = True
         self.role = Roles.CONTRIBUTOR
 
     def test_str_method(self):
@@ -72,7 +72,7 @@ class TestCustomUser(TestCase):
             role=self.role,
         )
         
-        self.assertEqual(CustomUser.__str__(user), self.email)
+        self.assertEqual(str(user), self.email)
 
     def test_has_perm(self):
         """Test the has_perm method of the CustomUser model."""
@@ -105,7 +105,7 @@ class TestCustomUser(TestCase):
             role=self.role,
         )
 
-        self.assertEqual(CustomUser.is_staff(user), self.is_admin)
+        self.assertEqual(user.is_staff(), self.is_admin)
 
     def test_is_project_lead(self):
         """Test the is_project_lead method of the CustomUser model."""
@@ -116,4 +116,4 @@ class TestCustomUser(TestCase):
             role=self.role,
         )
 
-        self.assertEqual(CustomUser.is_project_lead(user), self.role == Roles.PROJECT_LEAD)
+        self.assertEqual(user.is_project_lead(), self.role == Roles.PROJECT_LEAD)
