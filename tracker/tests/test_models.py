@@ -105,7 +105,7 @@ class TestCustomUser(TestCase):
             role=self.role,
         )
 
-        self.assertEqual(user.is_staff(), self.is_admin)
+        self.assertEqual(user.is_staff, self.is_admin)
 
     def test_is_project_lead(self):
         """Test the is_project_lead method of the CustomUser model."""
@@ -116,4 +116,4 @@ class TestCustomUser(TestCase):
             role=self.role,
         )
 
-        self.assertEqual(user.is_project_lead(), self.role == Roles.PROJECT_LEAD)
+        self.assertEqual(user.is_project_lead, self.role == Roles.PROJECT_LEAD)
