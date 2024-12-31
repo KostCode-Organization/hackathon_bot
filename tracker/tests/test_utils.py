@@ -152,7 +152,6 @@ class TestCheckIssueAssignmentEvents(TestCase):
 
         self.assertEqual(result, {})
 
-
     @patch("requests.get")
     def test_malformed_response(self, mock_get):
         """Test handling of malformed response data."""

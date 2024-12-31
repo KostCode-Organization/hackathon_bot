@@ -55,6 +55,7 @@ class TestCustomUserManager(TestCase):
 
         self.assertEqual(str(context.exception), "Invalid email format")
 
+
 class TestCustomUser(TestCase):
     def setUp(self):
         """Set up test data."""
@@ -71,7 +72,7 @@ class TestCustomUser(TestCase):
             is_admin=self.is_admin,
             role=self.role,
         )
-        
+
         self.assertEqual(str(user), self.email)
 
     def test_has_perm(self):
