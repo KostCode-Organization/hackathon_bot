@@ -14,9 +14,9 @@ from django_celery_beat.models import (
     SolarSchedule,
 )
 
-from .choices import Roles
 from .bases import PredefinedUserAdminBase
-from .models import Contributor, Repository, Support, CustomUser
+from .choices import Roles
+from .models import Contributor, CustomUser, Repository, Support
 from .telegram.bot import create_tg_link
 
 admin.site.unregister(Group)
@@ -108,7 +108,9 @@ class ContributorAdmin(admin.ModelAdmin):
 
         form.base_fields["role"].initial = Roles.CONTRIBUTOR
         form.base_fields["role"].disabled = True
-        form.base_fields["user"].queryset = CustomUser.objects.filter(role=Roles.CONTRIBUTOR)
+        form.base_fields["user"].queryset = CustomUser.objects.filter(
+            role=Roles.CONTRIBUTOR
+        )
 
         return form
 
@@ -139,6 +141,8 @@ class SupportAdmin(PredefinedUserAdminBase):
     def get_form(self, request, obj=None, **kwargs) -> BaseModelForm:
         form = super().get_form(request, obj, **kwargs)
 
-        form.base_fields["repository"].queryset = Repository.objects.filter(user=request.user)
+        form.base_fields["repository"].queryset = Repository.objects.filter(
+            user=request.user
+        )
 
         return form
