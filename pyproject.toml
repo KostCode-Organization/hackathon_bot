@@ -21,6 +21,7 @@ celery = "^5.4.0"
 django-celery-beat = "^2.7.0"
 redis = "^5.2.0"
 faker = "^33.1.0"
+django-allauth = "^65.3.1"
 
 
 [build-system]
