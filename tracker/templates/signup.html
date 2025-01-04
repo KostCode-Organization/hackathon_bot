@@ -68,7 +68,7 @@
                             <div class="form-row">
                                 <label for="role" class="required">Role:</label>
                                 {{ form.role }}
-                            </div>                            
+                            </div>
                             <div class="submit-row">
                                 <input type="submit" value="Sign up">
                             </div>
@@ -76,6 +76,7 @@
                                 <a href="/admin/">Log in</a>
                             </div>
                         </form>
+                        <a href="{% url 'socialaccount_signup' %}">Sign in with GitHub</a>
                     </div>
                     <br class="clear">
                 </div>

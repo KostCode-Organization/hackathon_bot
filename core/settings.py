@@ -28,7 +28,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if os.environ.get("DEBUG") == "True" else False
+
 
 ALLOWED_HOSTS = (
     [
@@ -174,17 +175,16 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-LOGIN_REDIRECT_URL = "/"
-ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "LOGIN_REDIRECT_URL"
+ACCOUNT_LOGOUT_REDIRECT_URL = "ACCOUNT_LOGOUT_REDIRECT_URL"
 
-SITE_ID = 1
+SITE_ID = "SITE_ID"
 
 SOCIALACCOUNT_PROVIDERS = {
     "github": {
         "APP": {
             "client_id": os.environ.get("GITHUB_CLIENT_ID"),
             "secret": os.environ.get("GITHUB_CLIENT_SECRET"),
-            "key": "",
         }
     }
 }
