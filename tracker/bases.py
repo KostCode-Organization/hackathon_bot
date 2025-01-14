@@ -1,3 +1,6 @@
+"""
+A `tracker.bases` module that contains all base classes
+"""
 from django.contrib import admin
 from django.forms import BaseModelForm
 
@@ -10,11 +13,12 @@ class PredefinedUserAdminBase(admin.ModelAdmin):
         get_form: Customizes the model form to set the user field to the current user.
     """
 
-    def get_form(self, request, obj=None, **kwargs) -> BaseModelForm:
+    def get_form(self, request, obj=None, change=False, **kwargs) -> BaseModelForm:
         """
         A custom method to set the user field to the current user.
         :param request: HttpRequest
         :param obj: Repository
+        :param change: bool
         :param kwargs: dict
         :return: BaseModelForm
         """

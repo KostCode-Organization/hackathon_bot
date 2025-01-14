@@ -1,7 +1,14 @@
+"""
+celery.py
+=========
+
+This module configures and initializes the Celery application
+used for handling asynchronous tasks in the project.
+"""
 import os
 
-from celery import Celery
 from django.conf import settings
+from celery import Celery
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 

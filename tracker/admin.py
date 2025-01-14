@@ -1,3 +1,7 @@
+"""
+A `tracker.admin` module that manages tracker app on Django admin site
+"""
+
 import asyncio
 
 from django.contrib import admin
@@ -14,9 +18,9 @@ from django_celery_beat.models import (
     SolarSchedule,
 )
 
-from .choices import Roles
 from .bases import PredefinedUserAdminBase
-from .models import Contributor, Repository, Support, CustomUser
+from .choices import Roles
+from .models import Contributor, CustomUser, Repository, Support
 from .telegram.bot import create_tg_link
 
 admin.site.unregister(Group)
@@ -96,11 +100,12 @@ class ContributorAdmin(admin.ModelAdmin):
 
         return False
 
-    def get_form(self, request, obj=None, **kwargs) -> BaseModelForm:
+    def get_form(self, request, obj=None, change=False, **kwargs) -> BaseModelForm:
         """
         Customizes the model form to set the user field to the current user.
         :param request: HttpRequest
         :param obj: AbstractModel
+        :param change: bool
         :param kwargs: dict
         :return: BaseModelForm
         """
@@ -108,7 +113,9 @@ class ContributorAdmin(admin.ModelAdmin):
 
         form.base_fields["role"].initial = Roles.CONTRIBUTOR
         form.base_fields["role"].disabled = True
-        form.base_fields["user"].queryset = CustomUser.objects.filter(role=Roles.CONTRIBUTOR)
+        form.base_fields["user"].queryset = CustomUser.objects.filter(
+            role=Roles.CONTRIBUTOR
+        )
 
         return form
 
@@ -120,7 +127,8 @@ class SupportAdmin(PredefinedUserAdminBase):
 
     Methods:
         has_module_permissions: Displays the model only for project leads.
-        get_form: Customizes the model form to set the repository field to the current user's repositories.
+        get_form: Customizes the model form to set the repository
+            field to the current user's repositories.
     """
 
     def has_module_permission(self, request) -> bool:
@@ -136,9 +144,19 @@ class SupportAdmin(PredefinedUserAdminBase):
 
         return False
 
-    def get_form(self, request, obj=None, **kwargs) -> BaseModelForm:
+    def get_form(self, request, obj=None, change=False, **kwargs) -> BaseModelForm:
+        """
+        Returns a support admin form
+        :param request: HttpRequest
+        :param obj: object
+        :param change: bool
+        :param kwargs: dict
+        :return: BaseModelForm
+        """
         form = super().get_form(request, obj, **kwargs)
 
-        form.base_fields["repository"].queryset = Repository.objects.filter(user=request.user)
+        form.base_fields["repository"].queryset = Repository.objects.filter(
+            user=request.user
+        )
 
         return form

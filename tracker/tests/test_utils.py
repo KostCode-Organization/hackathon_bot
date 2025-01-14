@@ -14,9 +14,7 @@ from tracker.utils import (
     get_user,
 )
 
-# TODO: move it to `values.py` in `tracker/tests`
 fake = Faker()
-# TODO: move it to `values.py` in `tracker/tests`
 telagram_id = fake.random_int(min=100000000, max=9999999999)
 
 
@@ -151,7 +149,6 @@ class TestCheckIssueAssignmentEvents(TestCase):
         result = check_issue_assignment_events(issue_without_url)
 
         self.assertEqual(result, {})
-
 
     @patch("requests.get")
     def test_malformed_response(self, mock_get):
