@@ -175,8 +175,8 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
-ACCOUNT_LOGOUT_REDIRECT_URL = os.environ.get("ACCOUNT_LOGOUT_REDIRECT_URL")
+LOGIN_REDIRECT_URL = "/admin/"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/admin/"
 
 SITE_ID = int(os.environ.get("SITE_ID", 1))
 
