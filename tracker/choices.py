@@ -1,3 +1,6 @@
+"""
+A `tracker.choices` bodule that contains all model choices
+"""
 from django.db import models
 
 

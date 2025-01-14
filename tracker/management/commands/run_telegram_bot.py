@@ -1,3 +1,7 @@
+"""
+A `tracker.management.commands.run_telegram_bot` command for running telegram bots.`
+"""
+
 import asyncio
 
 from django.core.management.base import BaseCommand
@@ -12,20 +16,18 @@ class Command(BaseCommand):
     This command initializes and starts the Telegram bot using asynchronous operations.
 
     Methods:
-        - handle(self, *args, **kwargs): Handles the execution of the command.
+        - handle(self, *args, **options): Handles the execution of the command.
     """
 
     help = "Runs the Telegram bot"
 
-    def handle(self, *args, **kwargs) -> None:
+    def handle(self, *args, **options) -> None:
         """
         Handles the execution of the command.
 
         This method is called when the management command is run. It starts the Telegram bot
         and outputs a message to the standard output indicating that the bot has started.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional keyword arguments.
         :return: None
         """
         self.stdout.write("Starting Telegram bot...")
