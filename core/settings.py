@@ -30,6 +30,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG") == "True"
 
+
 ALLOWED_HOSTS = (
     [
         os.environ.get("DOMAIN", "*"),
@@ -51,6 +52,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # third party apps
     "django_celery_beat",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.github",
     # custom apps
     "tracker",
 ]
@@ -63,6 +68,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -162,3 +168,30 @@ CELERY_RESULT_SERIALIZER = "json"
 # Custom app settings
 
 DEFAULT_SCHEDULE_INTERVAL = 3600
+
+# Django-Allauth settings
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+LOGIN_REDIRECT_URL = "/admin/"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/admin/"
+
+SITE_ID = int(os.environ.get("SITE_ID", 1))
+
+SOCIAL_AUTH_GITHUB_KEY = os.environ.get("GITHUB_CLIENT_ID")
+SOCIAL_AUTH_GITHUB_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
+
+SOCIALACCOUNT_PROVIDERS = {
+    "github": {
+        "SCOPE": ["user", "repo"],
+        "AUTH_PARAMS": {"scope": "user"},
+    }
+}
+
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
