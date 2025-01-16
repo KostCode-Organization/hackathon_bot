@@ -1,3 +1,6 @@
+"""
+A `tracker.values` model that contains all hardcoded values for tracking purposes
+"""
 import os
 from dataclasses import dataclass
 
@@ -5,6 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+REQUEST_TIMEOUT: int = 10  # in seconds
 ISSUES_URL: str = "https://api.github.com/repos/{owner}/{repo}/issues"
 PULLS_URL: str = "https://api.github.com/repos/{owner}/{repo}/pulls"
 PULLS_REVIEWS_URL: str = (
