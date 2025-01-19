@@ -1,3 +1,7 @@
+"""
+A `tracker.views` model that contains all views
+"""
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.http import HttpResponse
@@ -7,7 +11,11 @@ from django.views.generic import CreateView
 from .forms import SignUpForm
 
 
-class CreateUserView(CreateView):
+class CreateUserView(CreateView):  # pylint: disable=too-many-ancestors
+    """
+    A user creation view
+    """
+
     form_class = SignUpForm
     success_url = "/admin/"
     template_name = "signup.html"
@@ -40,6 +48,7 @@ class CreateUserView(CreateView):
 
             return redirect(self.success_url)
 
-        [messages.error(request, error_) for error_ in form.errors.values()]
+        for error_ in form.errors.values():
+            messages.error(request, error_)
 
         return render(request, self.template_name, {"form": form})

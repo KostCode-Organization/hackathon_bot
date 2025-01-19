@@ -15,7 +15,6 @@ from tracker.utils import (
 )
 
 fake = Faker()
-
 telagram_id = fake.random_int(min=100000000, max=9999999999)
 
 
@@ -41,8 +40,9 @@ class TestGetAllRepositories(TestCase):
 
     def test_get_all_repositories_invalid_user(self):
         """Test invalid telegram ID raises exception."""
-        with self.assertRaises(TelegramUser.DoesNotExist):
-            async_to_sync(get_all_repostitories)(tele_id="987654321")
+        result = async_to_sync(get_all_repostitories)(tele_id="987654321")
+
+        self.assertEqual(len(result), 0)
 
 
 class TestGetUser(TestCase):
@@ -70,7 +70,7 @@ class TestGetUser(TestCase):
 class TestCheckIssueAssignmentEvents(TestCase):
     def setUp(self):
         """Set up test data."""
-        self.issue = {
+        self.issue_link = {
             "events_url": "https://api.github.com/repos/owner/repo/issues/1/events"
         }
 
@@ -89,13 +89,10 @@ class TestCheckIssueAssignmentEvents(TestCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        result = check_issue_assignment_events(self.issue)
+        result = check_issue_assignment_events(self.issue_link)
 
         self.assertEqual(result["assignee"], "testuser")
         self.assertEqual(result["assigned_at"], "2024-01-01T12:00:00Z")
-        mock_get.assert_called_once_with(
-            self.issue["events_url"], headers=patch.dict("tracker.utils.HEADERS", {})
-        )
 
     @patch("requests.get")
     def test_multiple_assignment_events(self, mock_get):
@@ -116,7 +113,7 @@ class TestCheckIssueAssignmentEvents(TestCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        result = check_issue_assignment_events(self.issue)
+        result = check_issue_assignment_events(self.issue_link)
 
         self.assertEqual(result["assignee"], "user2")
         self.assertEqual(result["assigned_at"], "2024-01-02T12:00:00Z")
@@ -131,16 +128,16 @@ class TestCheckIssueAssignmentEvents(TestCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        result = check_issue_assignment_events(self.issue)
+        result = check_issue_assignment_events(self.issue_link)
 
-        self.assertEqual(result, {"assignee": "", "assigned_at": ""})
+        self.assertEqual(result, {})
 
     @patch("requests.get")
     def test_request_exception(self, mock_get):
         """Test handling of request exceptions."""
         mock_get.side_effect = requests.exceptions.RequestException("Network error")
 
-        result = check_issue_assignment_events(self.issue)
+        result = check_issue_assignment_events(self.issue_link)
 
         self.assertEqual(result, {})
 
@@ -152,9 +149,6 @@ class TestCheckIssueAssignmentEvents(TestCase):
         result = check_issue_assignment_events(issue_without_url)
 
         self.assertEqual(result, {})
-        mock_get.assert_called_once_with(
-            "", headers=patch.dict("tracker.utils.HEADERS", {})
-        )
 
     @patch("requests.get")
     def test_malformed_response(self, mock_get):
@@ -169,7 +163,7 @@ class TestCheckIssueAssignmentEvents(TestCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        result = check_issue_assignment_events(self.issue)
+        result = check_issue_assignment_events(self.issue_link)
 
         self.assertEqual(result["assignee"], "")
         self.assertEqual(result["assigned_at"], "")

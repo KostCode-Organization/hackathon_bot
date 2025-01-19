@@ -1,9 +1,13 @@
+"""
+A `tracker.telegram.templates` model for handling string templates
+"""
+
 from dataclasses import dataclass
 from string import Template
 
 
 @dataclass
-class TemplateNames:
+class TemplateNames:  # pylint: disable=too-many-instance-attributes
     """Class to hold all the templates used in the bot."""
 
     greeting: Template
@@ -14,6 +18,9 @@ class TemplateNames:
     no_issues: Template
     issue_list_item: Template
     support_contact: Template
+    no_support: Template
+    review_data: Template
+    review_unit: Template
 
 
 TEMPLATES = TemplateNames(
@@ -42,4 +49,15 @@ TEMPLATES = TemplateNames(
         "-----------------------------------\n"
     ),
     support_contact=Template("Support Contact:\n$repo_message\n$support_link"),
+    no_support=Template("Support Contact:\n$repo_message\nNo support provided."),
+    review_data=Template(
+        "-------------------------------"
+        "Repo: <b>$repository</b>"
+        "\n"
+        "Pull Request: <b>$pull_request/</b>"
+        "\n"
+        "<b>Reviews:</b>"
+        "\n"
+    ),
+    review_unit=Template("User: <b>$user</b>\nState: $state\n\n"),
 )

@@ -1,3 +1,7 @@
+"""
+A `tracker.telegram.bot` module that contains bot's logc
+"""
+
 import asyncio
 import logging
 import os
@@ -195,10 +199,15 @@ async def send_new_issue_notification(
 
 
 @dp.message(F.text.contains("/issues "))
-async def get_contributor_tasks(message: Message):
+async def get_contributor_tasks(message: Message) -> None:
+    """
+    A function that sends all contributor issues
+    :param message: Message
+    :return: None
+    """
     _, username = message.text.split(" ", 1)
 
-    regex = r"ODHack"
+    regex = r"odhack"
 
     issues = get_contributor_issues(username, True, True, regex)
 
@@ -224,24 +233,17 @@ async def send_revision_messages(telegram_id: str, reviews_data: list[dict]) -> 
         "=" * 50 + "\n" + "<b>Revisions and Approvals</b>" + "\n" + "=" * 50 + "\n\n"
     )
     for data in reviews_data:
-        message += (
-            "-------------------------------"
-            f"Repo: <b>{data['repo']}</b>"
-            "\n"
-            f"Pull Request: <b>{data['pull']}/</b>"
-            "\n"
-            f"<b>Reviews:</b>"
-            "\n"
+        message += TEMPLATES.review_data.substitute(
+            repository=data.get("repo", "Unknown"),
+            pull_request=data.get("pull", "Unknown"),
         )
         for review in data["reviews"]:
-            message += (
-                f"User: <b>{review['user']['login']}</b>"
-                "\n"
-                f"State: {review['state']}"
-                "\n\n"
+            message += TEMPLATES.review_unit.substitute(
+                user=review.get("user", {}).get("login", "Unknown"),
+                state=review.get("state", "Unknown"),
             )
         message += "-------------------------------"
-    # Send bot message
+
     await bot.send_message(telegram_id, message)
 
 
@@ -270,7 +272,13 @@ async def send_support_contacts(msg: Message) -> None:
                 repo_message=repo_message,
                 support_link=support_link,
             )
-            await msg.reply(message, parse_mode="HTML")
+
+        else:
+            message = TEMPLATES.no_support.substitute(
+                repo_message=repo_message,
+            )
+
+        await msg.reply(message, parse_mode="HTML")
 
 
 def main_button_markup() -> ReplyKeyboardMarkup:
@@ -288,6 +296,11 @@ def main_button_markup() -> ReplyKeyboardMarkup:
 
 
 async def create_tg_link(uuid) -> str:
+    """
+    A function that creates a telegram link
+    :param uuid: UUID
+    :return: str
+    """
     return await create_start_link(bot=bot, payload=uuid, encode=True)
 
 

@@ -1,3 +1,6 @@
+"""
+A `tracker.models` module that contains all models of the `tracker` app
+"""
 import requests
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
@@ -8,7 +11,7 @@ from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
 from shared.models import AbstractModel
 from tracker.choices import Roles
-from tracker.values import ROLE_MAX_CHARACTER_LENGTH, DefaultModelValues
+from tracker.values import ROLE_MAX_CHARACTER_LENGTH, DefaultModelValues, REQUEST_TIMEOUT
 
 
 class CustomUserManager(BaseUserManager):
@@ -31,10 +34,10 @@ class CustomUserManager(BaseUserManager):
         :return: CustomUser
         """
         if email:
-            try:
-                validate_email(email)
-            except ValidationError:
-                raise ValueError("Invalid email format")
+            # try:
+            validate_email(email)
+            # except ValidationError:
+            #     raise ValueError("Invalid email format")
 
         if not role:
             role = Roles.CONTRIBUTOR
@@ -135,6 +138,7 @@ class CustomUser(AbstractModel, AbstractBaseUser):
         """
         return self.is_admin
 
+    @property
     def is_project_lead(self) -> bool:
         """
         Checks if the user is a project lead
@@ -169,6 +173,9 @@ class Repository(AbstractModel):
     )
 
     class Meta:
+        """
+        A metaclass for Repository model
+        """
         verbose_name_plural = "Repositories"
 
     def clean(self) -> None:
@@ -185,7 +192,7 @@ class Repository(AbstractModel):
             raise ValidationError("Repository author must be in the link.")
 
         try:
-            response = requests.get(str(self.link))
+            response = requests.get(str(self.link), timeout=REQUEST_TIMEOUT)
             response.raise_for_status()
 
             if not response.ok:
@@ -200,11 +207,6 @@ class Repository(AbstractModel):
         :return: str
         """
         return f"{self.author}/{self.name}"
-
-    def save(self, *args, **kwargs) -> None:
-        repository = super().save(*args, **kwargs)
-
-        Support.objects.create(repository=repository)
 
 
 class TelegramUser(AbstractModel):
@@ -274,6 +276,7 @@ class Contributor(AbstractModel):
     rank = models.IntegerField(default=0)
 
     class Meta:
+        """A metaclass for Contributor model"""
         verbose_name_plural = "Contributors"
 
     def __str__(self):
@@ -298,6 +301,7 @@ class Support(AbstractModel):
     """
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    repository = models.ForeignKey(Repository, null=True, on_delete=models.CASCADE)
     telegram_username = models.CharField(max_length=DefaultModelValues.name_max_length)
 
     def __str__(self) -> str:

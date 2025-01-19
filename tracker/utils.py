@@ -1,3 +1,7 @@
+"""
+A `tracker.utils` module provides utility functions for tracking.
+"""
+
 import logging
 import re
 from collections import defaultdict
@@ -16,6 +20,7 @@ from .values import (
     PULLS_REVIEWS_URL,
     PULLS_URL,
     SECONDS_IN_AN_HOUR,
+    REQUEST_TIMEOUT,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,13 +47,12 @@ def get_all_repositories(tele_id: str) -> list[dict]:
     """
     from .models import TelegramUser
 
-    repositories = (
-        TelegramUser.objects.filter(telegram_id=tele_id)
-        .first()
-        .user.repository_set.values()
-    )
+    telegram_user = TelegramUser.objects.filter(telegram_id=tele_id).first()
 
-    return list(repositories)
+    if telegram_user:
+        return list(telegram_user.user.repository_set.values())
+
+    return []
 
 
 @sync_to_async
@@ -89,13 +93,17 @@ def check_issue_assignment_events(issue: dict) -> dict:
     :param issue: The issue dictionary containing information about the issue, including
                   an "events_url" to fetch assignment events.
     :return: A dictionary with two keys:
-             - "assignee": the login of the user assigned to the issue (empty string if not assigned).
-             - "assigned_at": the time the issue was assigned (empty string if no assignment event).
+             - "assignee": the login of the user assigned to the issue
+                (empty string if not assigned).
+             - "assigned_at": the time the issue was assigned
+                (empty string if no assignment event).
     """
     try:
         events_url = issue.get("events_url", str())
 
-        response = requests.get(events_url, headers=HEADERS)
+        response = requests.get(
+            events_url, headers=HEADERS, timeout=REQUEST_TIMEOUT
+        )
         response.raise_for_status()
 
         events = response.json()
@@ -125,7 +133,7 @@ def get_all_open_and_assigned_issues(url: str) -> list[dict]:
     :return: A list of dictionaries representing open and assigned issues.
     """
     try:
-        response = requests.get(url, headers=HEADERS)
+        response = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
 
         issues = response.json()
@@ -158,7 +166,9 @@ def get_all_open_pull_requests(url: str) -> list[dict]:
     :return: A list of dictionaries representing open pull requests.
     """
     try:
-        response = requests.get(url, headers=HEADERS, params={"state": "open"})
+        response = requests.get(
+            url, headers=HEADERS, params={"state": "open"}, timeout=REQUEST_TIMEOUT
+        )
         response.raise_for_status()
 
         response = response.json()
@@ -184,7 +194,7 @@ def get_issues_without_pull_requests(
 
     for issue in issues:
         issue["assignment_info"] = check_issue_assignment_events(issue)
-        assigned_at = issue.get("assignment_info", dict()).get("assigned_at")
+        assigned_at = issue.get("assignment_info", {}).get("assigned_at")
 
         time_delta = (
             relativedelta(
@@ -200,17 +210,17 @@ def get_issues_without_pull_requests(
     pull_requests = get_all_open_pull_requests(pull_requests_url)
 
     pull_requests_users = [
-        pull_request.get("user", dict()).get("login")
+        pull_request.get("user", {}).get("login")
         for pull_request in pull_requests
-        if pull_request.get("user", dict()).get("login")
+        if pull_request.get("user", {}).get("login")
     ]
 
-    result = list()
+    result = []
 
     for issue in issues.copy():
         if (
-            issue.get("days", 0) >= 1
-            and issue.get("assignee", dict()).get("login") not in pull_requests_users
+            issue.get("days", 0) >= 1  # TODO make it correspond to repository settings
+            and issue.get("assignee", {}).get("login") not in pull_requests_users
         ):
             result.append(issue)
 
@@ -220,13 +230,15 @@ def get_issues_without_pull_requests(
 def get_all_available_issues(url: str) -> list[dict]:
     """
     Retrieves all available issues from a given URL.
-    If the response status is not successful, it raises an exception and returns an empty list.
+    If the response status is not successful,
+    it raises an exception and returns an empty list.
 
     :param url: The API endpoint for issues.
-    :return: A list of dictionaries representing available issues or an empty list if an error occurs.
+    :return: A list of dictionaries representing available
+        issues or an empty list if an error occurs.
     """
     try:
-        response = requests.get(url, headers=HEADERS)
+        response = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
 
         issues = response.json()
@@ -259,7 +271,7 @@ def get_pull_reviews(url: str) -> list[dict]:
     :return: A list of dictionaries representing available issues.
     """
     try:
-        response = requests.get(url, headers=HEADERS)
+        response = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -308,7 +320,7 @@ def get_contributor_issues(
     api_url = ISSUES_SEARCH.format(username=username)
 
     try:
-        response = requests.get(api_url, headers=HEADERS)
+        response = requests.get(api_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
 
         issues = response.json().get("items", [])
@@ -410,6 +422,11 @@ def attach_link_to_issue(issue: dict) -> str:
 
 
 def get_repository_from_issue(issue: dict) -> dict:
+    """
+    Retrieves the repository name from an issue.
+    :param issue: dict
+    :return: dict
+    """
     repository_url = issue.get("repository_url", "")
     if repository_url:
         parts = repository_url.rstrip("/").split("/")
@@ -451,9 +468,12 @@ def get_time_before_deadline(issue: dict) -> str:
 
     if deadline_datetime > now:
         remaining_time = deadline_datetime - now
-        return f"Time remaining: {remaining_time.days} days, {remaining_time.seconds // SECONDS_IN_AN_HOUR} hours"
-    else:
-        return "Deadline has passed."
+        return (
+            f"Time remaining: {remaining_time.days} days, "
+            f"{remaining_time.seconds // SECONDS_IN_AN_HOUR} hours"
+        )
+
+    return "Deadline has passed."
 
 
 def get_support_link(telegram_username: str) -> str:
@@ -484,5 +504,7 @@ def get_repository_support(author: str, repo_name: str) -> "Support":
 
     repository = Repository.objects.filter(author=author, name=repo_name).first()
     if repository:
-        return Support.objects.filter(user=repository.user).first()
+        return Support.objects.filter(
+            user=repository.user, repository=repository
+        ).first()
     return None

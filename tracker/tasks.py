@@ -1,3 +1,7 @@
+"""
+A `tracker.tasks` module that contains all celery tasks.
+"""
+
 import json
 import logging
 import os

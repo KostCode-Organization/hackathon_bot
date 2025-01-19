@@ -1,3 +1,6 @@
+"""
+A `tracker.forms` module that contains all forms
+"""
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -34,6 +37,7 @@ class SignUpForm(forms.ModelForm):
     role = forms.ChoiceField(choices=Roles.choices)
 
     class Meta:
+        """A metaclass for SignUpForm"""
         model = CustomUser
         fields = ("email", "password")
 
